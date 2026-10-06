@@ -32,7 +32,8 @@ Before answering the questions, I opened the capture and reviewed the overall tr
 
 The Endpoints window (IPv4 tab) shows two hosts: `24.49.63.79` (web server) and `117.11.88.124` (attacker), each exchanging 355 packets. The external address `117.11.88.124` is the IP to investigate.
 
-<img width="809" height="446" alt="image" src="https://github.com/user-attachments/assets/f5485773-e137-4ab8-bdc1-a05dffe405dc" />
+<img width="809" height="446" alt="image" src="https://github.com/user-attachments/assets/b5133329-2a2b-4fb6-847a-7bedff48395f" />
+
 
 
 *Ref 1: Endpoints window (IPv4 tab) identifying the web server and attacker*
@@ -45,7 +46,8 @@ This task aimed at identifying the geographical origin of the attack, which help
 
 The lookup resolved the IP to **Tianjin, China**, with hostname `dns124.online.tj.cn`, District Nankai, and State code `CN-TJ`.
 
-<img width="600" height="300" alt="ipgeolocation.io lookup resolving the attacker IP to Tianjin, China" src="SCREENSHOT_2_URL" />
+<img width="975" height="530" alt="image" src="https://github.com/user-attachments/assets/09bd1603-45de-4a19-9733-0c600dff0488" />
+
 
 *Ref 2: IP geolocation lookup for 117.11.88.124*
 
@@ -67,7 +69,7 @@ Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
 
 This indicates the attacker was operating from a Linux host and running Mozilla Firefox 115.
 
-<img width="974" height="394" alt="image" src="https://github.com/user-attachments/assets/2a68bbc0-ee14-4341-9619-01c9e3596fe2" />
+<img width="974" height="394" alt="image" src="https://github.com/user-attachments/assets/9e46ddf5-da8c-4abd-8fd8-f8eacaec7c7b" />
 
 
 *Ref 3: Follow HTTP Stream revealing the attacker's User-Agent*
@@ -78,14 +80,13 @@ This indicates the attacker was operating from a Linux host and running Mozilla 
 
 This task required determining whether any vulnerabilities were exploited and the name of the malicious web shell that was successfully uploaded. I applied the display filter `http.request.method == POST` to find requests using the POST method, then right-clicked the captures to follow the HTTP streams and trace the POST requests.
 
-<img width="975" height="441" alt="image" src="https://github.com/user-attachments/assets/478e85ce-eacd-4bf6-a76e-3f8cab98bea4" />
-
+<img width="975" height="441" alt="image" src="https://github.com/user-attachments/assets/598b4aa0-e60c-4e15-87f0-fbd1d732fdf9" />
 
 *Ref 4: Filtering for POST requests*
 
 On the HTTP stream, I confirmed the file was successfully uploaded to the server. The uploaded file is `image.jpg.php`. This file bypassed the security check and was successfully uploaded because `.jpg` was appended to the filename, making it difficult to detect (a double-extension bypass).
 
-<img width="967" height="438" alt="image" src="https://github.com/user-attachments/assets/c2a37358-7d95-447e-b898-d4753b6d94dc" />
+<img width="967" height="438" alt="image" src="https://github.com/user-attachments/assets/7ec4ad50-3d5d-43af-9b35-f643512cc634" />
 
 
 *Ref 5: HTTP stream confirming the image.jpg.php web shell upload*
@@ -96,7 +97,7 @@ On the HTTP stream, I confirmed the file was successfully uploaded to the server
 
 The aim was to identify the directory where the uploaded `image.jpg.php` file is stored, which is important for locating the vulnerable page and removing any malicious files. I reused the POST filter to find the request with the POST method.
 
-<img width="975" height="441" alt="image" src="https://github.com/user-attachments/assets/c31b2080-d621-4069-8bbf-12bcbccde073" />
+<img width="975" height="441" alt="image" src="https://github.com/user-attachments/assets/ecdad25b-593c-4070-9cc0-fbcc771d92ee" />
 
 
 *Ref 6: Re-applying the POST filter*
@@ -107,14 +108,15 @@ Then I filtered for the packet with the uploaded file using:
 http.request.uri contains "image.jpg.php"
 ```
 
-<img width="975" height="429" alt="image" src="https://github.com/user-attachments/assets/51b997f5-bc05-462a-aa58-31f582f84814" />
+<img width="975" height="429" alt="image" src="https://github.com/user-attachments/assets/355b4bd0-9c54-4592-a4d2-7b119973e852" />
 
 
 *Ref 7: Filtering for the uploaded file by URI*
 
 Right-clicking, selecting **Follow**, and then **HTTP Stream** reveals the directory the application writes uploads into: `/reviews/uploads/`. This is the location that must be cleaned up during remediation.
 
-<img width="975" height="514" alt="image" src="https://github.com/user-attachments/assets/785ad6f1-41f1-4763-a869-60961f94b12c" />
+<img width="975" height="514" alt="image" src="https://github.com/user-attachments/assets/2616b075-15ca-4151-9b2d-469e56f2215d" />
+
 
 
 *Ref 8: HTTP stream revealing the upload directory /reviews/uploads/*
@@ -125,8 +127,7 @@ Right-clicking, selecting **Follow**, and then **HTTP Stream** reveals the direc
 
 This task required finding the port targeted by the malicious web shell for establishing unauthorized outbound communication. I filtered for the POST request method and followed the HTTP stream, which revealed that the targeted port is **8080**.
 
-<img width="975" height="444" alt="image" src="https://github.com/user-attachments/assets/196c7d10-d75c-4323-87b0-afddeb7914c0" />
-
+<img width="975" height="444" alt="image" src="https://github.com/user-attachments/assets/53837481-7e6d-4c20-8298-9202b306e547" />
 
 *Ref 9: HTTP stream revealing the targeted port 8080*
 
@@ -142,14 +143,14 @@ Identifying the importance of the compromised data helps in prioritization durin
 
 Since the attacker targeted port 8080 of the server, I right-clicked the first highlighted packet on port 8080 to select **Follow** and then **TCP Stream**.
 
-<img width="934" height="362" alt="image" src="https://github.com/user-attachments/assets/faba154b-0c91-4ee2-b4d0-6c941add231c" />
+<img width="934" height="362" alt="image" src="https://github.com/user-attachments/assets/6eb76a75-dcb1-44f3-9caf-f66589565df3" />
 
 
 *Ref 10: Filtering port 8080 traffic and following the TCP stream*
 
 Using the TCP stream, I found that the file is `/etc/passwd`, which is an account database. The `curl -X POST -d /etc/passwd` command reads the file and posts it to the attacker's listener at port 443, confirming an attempt to exfiltrate system user information.
 
-<img width="600" height="300" alt="TCP stream showing /etc/passwd exfiltration via curl to port 443" src="SCREENSHOT_11_URL" />
+<img width="971" height="437" alt="image" src="https://github.com/user-attachments/assets/00936a60-a57b-4893-a179-7f8c50408741" />
 
 *Ref 11: TCP stream confirming the /etc/passwd exfiltration attempt*
 
